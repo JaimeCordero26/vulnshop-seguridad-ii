@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VulnShop</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">🛒 VulnShop</a>
+    <form class="search" action="/search" method="GET">
+      <input type="text" name="q" placeholder="Buscar productos..." value="">
+      <button type="submit">Buscar</button>
+    </form>
+    <nav>
+      <a href="/cart">Carrito</a>
+      <% if (currentUser) { %>
+        <a href="/orders">Mis pedidos</a>
+        <a href="/profile">Perfil</a>
+        <a href="/admin">Admin</a>
+        <span class="user">👤 <%= currentUser.username %></span>
+        <a href="/logout">Salir</a>
+      <% } else { %>
+        <a href="/login">Entrar</a>
+        <a href="/register">Registro</a>
+      <% } %>
+    </nav>
+  </header>
+  <main class="container">
