@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+
+<p><a href="/">&larr; Volver al catalogo</a></p>
+
+<div class="detail">
+  <img src="<%= product.image_url %>" alt="<%= product.name %>">
+  <div>
+    <h1><%= product.name %></h1>
+    <p class="price">$<%= Number(product.price).toFixed(2) %></p>
+    <p><%= product.description %></p>
+    <p>Stock: <%= product.stock %></p>
+    <form action="/cart/add" method="POST">
+      <input type="hidden" name="product_id" value="<%= product.id %>">
+      <button type="submit">Agregar al carrito</button>
+    </form>
+  </div>
+</div>
+
+<section class="comments">
+  <h2>Comentarios</h2>
+  <% comments.forEach(function (c) { %>
+    <div class="comment">
+      <strong><%= c.username %></strong> <span class="date"><%= c.created_at %></span>
+      <!-- [VULN-A03] XSS almacenado: el cuerpo se imprime SIN escapar (<%- %>) -->
+      <div class="body"><%- c.body %></div>
+    </div>
+  <% }); %>
+
+  <form action="/product/<%= product.id %>/comment" method="POST" class="comment-form">
+    <textarea name="body" rows="3" placeholder="Escribe un comentario..."></textarea>
+    <button type="submit">Comentar</button>
+  </form>
+</section>
+
+<%- include('partials/footer') %>

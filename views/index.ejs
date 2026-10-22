@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+
+<% if (query !== null) { %>
+  <h1>Resultados para "<%= query %>"</h1>
+  <p><a href="/">&larr; Volver al catalogo</a></p>
+<% } else { %>
+  <h1>Catalogo</h1>
+<% } %>
+
+<% if (products.length === 0) { %>
+  <p>No se encontraron productos.</p>
+<% } %>
+
+<div class="grid">
+  <% products.forEach(function (p) { %>
+    <div class="card">
+      <a href="/product/<%= p.id %>">
+        <img src="<%= p.image_url %>" alt="<%= p.name %>" loading="lazy">
+      </a>
+      <h3><a href="/product/<%= p.id %>"><%= p.name %></a></h3>
+      <p class="price">$<%= Number(p.price).toFixed(2) %></p>
+      <form action="/cart/add" method="POST">
+        <input type="hidden" name="product_id" value="<%= p.id %>">
+        <button type="submit">Agregar al carrito</button>
+      </form>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('partials/footer') %>
