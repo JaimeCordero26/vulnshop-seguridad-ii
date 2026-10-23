@@ -1,0 +1,10 @@
+<%- include('partials/header') %>
+<div class="form-box">
+  <h1>Nueva contrasena</h1>
+  <form action="/reset" method="POST">
+    <input type="hidden" name="token" value="<%= token %>">
+    <label>Nueva contrasena <input type="password" name="password" required></label>
+    <button type="submit">Cambiar</button>
+  </form>
+</div>
+<%- include('partials/footer') %>
