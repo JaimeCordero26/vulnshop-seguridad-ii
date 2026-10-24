@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+<h1>Carrito</h1>
+<% if (cart.length === 0) { %>
+  <p>Tu carrito esta vacio. <a href="/">Ver productos</a></p>
+<% } else { %>
+  <table class="list">
+    <thead><tr><th>Producto</th><th>Precio</th></tr></thead>
+    <tbody>
+      <% cart.forEach(function (i) { %>
+        <tr><td><%= i.name %></td><td>$<%= Number(i.price).toFixed(2) %></td></tr>
+      <% }); %>
+    </tbody>
+    <tfoot><tr><th>Total</th><th>$<%= Number(total).toFixed(2) %></th></tr></tfoot>
+  </table>
+  <form action="/cart/checkout" method="POST">
+    <button type="submit">Pagar</button>
+  </form>
+<% } %>
+<%- include('partials/footer') %>

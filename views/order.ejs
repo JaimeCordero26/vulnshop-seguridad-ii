@@ -1,0 +1,15 @@
+<%- include('partials/header') %>
+<p><a href="/orders">&larr; Mis pedidos</a></p>
+<h1>Pedido #<%= order.id %></h1>
+<p>Usuario propietario (user_id): <%= order.user_id %></p>
+<p>Fecha: <%= order.created_at %> · Estado: <%= order.status %></p>
+<table class="list">
+  <thead><tr><th>Producto</th><th>Precio</th></tr></thead>
+  <tbody>
+    <% order.items.forEach(function (i) { %>
+      <tr><td><%= i.name %></td><td>$<%= Number(i.price).toFixed(2) %></td></tr>
+    <% }); %>
+  </tbody>
+  <tfoot><tr><th>Total</th><th>$<%= Number(order.total).toFixed(2) %></th></tr></tfoot>
+</table>
+<%- include('partials/footer') %>

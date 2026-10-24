@@ -1,0 +1,23 @@
+<%- include('partials/header') %>
+<h1>Mis pedidos</h1>
+<% if (orders.length === 0) { %>
+  <p>No tienes pedidos todavia.</p>
+<% } else { %>
+  <table class="list">
+    <thead><tr><th>#</th><th>Fecha</th><th>Total</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      <% orders.forEach(function (o) { %>
+        <tr>
+          <td><%= o.id %></td>
+          <td><%= o.created_at %></td>
+          <td>$<%= Number(o.total).toFixed(2) %></td>
+          <td><%= o.status %></td>
+          <td><a href="/orders/<%= o.id %>">Ver</a></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  <p class="hint">Prueba IDOR: abre <code>/orders/1</code>, <code>/orders/2</code>...
+    aunque no sean tuyos.</p>
+<% } %>
+<%- include('partials/footer') %>
