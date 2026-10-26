@@ -1,0 +1,9 @@
+<%- include('partials/header') %>
+<h1>Archivos subidos</h1>
+<p class="hint">Listado de directorio expuesto (Security Misconfiguration).</p>
+<ul class="files">
+  <% files.forEach(function (f) { %>
+    <li><a href="/uploads/<%= f %>"><%= f %></a></li>
+  <% }); %>
+</ul>
+<%- include('partials/footer') %>

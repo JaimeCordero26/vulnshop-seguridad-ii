@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+<h1>Panel de administracion</h1>
+<p class="hint">Esta pagina deberia exigir rol <code>admin</code>, pero solo exige
+  estar autenticado (Broken Access Control).</p>
+
+<h2>Usuarios</h2>
+<table class="list">
+  <thead><tr><th>ID</th><th>Usuario</th><th>Rol</th><th>Password (MD5)</th><th>Tarjeta</th></tr></thead>
+  <tbody>
+    <% users.forEach(function (u) { %>
+      <tr>
+        <td><%= u.id %></td>
+        <td><%= u.username %></td>
+        <td><%= u.role %></td>
+        <td class="mono"><%= u.password %></td>
+        <td class="mono"><%= u.credit_card %></td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<h2>Importar imagen desde URL</h2>
+<p class="hint">Trae una URL del lado del servidor (SSRF: prueba
+  <code>http://localhost:3000/admin</code> o metadata interna).</p>
+<form action="/admin/import-image" method="POST">
+  <input type="text" name="url" placeholder="https://..." size="50">
+  <button type="submit">Traer</button>
+</form>
+<% if (error) { %><p class="error"><%= error %></p><% } %>
+<% if (fetched) { %>
+  <h3>Respuesta del servidor:</h3>
+  <pre class="fetched"><%= fetched %></pre>
+<% } %>
+
+<%- include('partials/footer') %>
