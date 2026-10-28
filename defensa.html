@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VulnShop — Guía de defensa</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#172033; --accent:#38bdf8;
+    --text:#e2e8f0; --muted:#94a3b8; --danger:#f87171; --ok:#4ade80; --warn:#fbbf24;
+    --border:#334155; --code:#0b1220;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:system-ui,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+  .wrap{max-width:900px;margin:0 auto;padding:32px 20px 80px}
+  header.hero{background:linear-gradient(135deg,#1e293b,#0b1220);
+    border:1px solid var(--border);border-left:5px solid var(--accent);
+    border-radius:12px;padding:26px 28px;margin-bottom:28px}
+  .hero h1{margin:0 0 6px;font-size:2rem;color:var(--accent)}
+  .hero .team{font-size:1.1rem;font-weight:600}
+  .hero .meta{color:var(--muted);margin-top:8px;font-size:.92rem}
+  .warn-box{background:#2a1f12;border:1px solid var(--warn);border-radius:10px;
+    padding:12px 16px;margin:22px 0;color:#fde68a;font-size:.92rem}
+  h2{color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:6px;
+    margin-top:38px;font-size:1.4rem}
+  h3{margin:22px 0 6px;font-size:1.08rem}
+  code{background:var(--code);padding:2px 7px;border-radius:5px;
+    font-family:"JetBrains Mono",Consolas,monospace;font-size:.87em;color:#e0f2fe}
+  pre{background:var(--code);border:1px solid var(--border);border-radius:8px;
+    padding:12px 14px;overflow:auto;font-size:.85rem;
+    font-family:"JetBrains Mono",Consolas,monospace}
+  pre code{background:none;padding:0;color:var(--text)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.9rem}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--muted)}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+    padding:4px 20px 16px;margin:18px 0}
+  .tag{display:inline-block;background:var(--accent);color:#06283d;font-weight:700;
+    padding:2px 9px;border-radius:999px;font-size:.78rem;margin-right:6px}
+  .tag.a{background:var(--danger);color:#2a0a0a}
+  .steps{counter-reset:s;list-style:none;padding-left:0}
+  .steps li{counter-increment:s;position:relative;padding:4px 0 4px 34px;margin:4px 0}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:3px;
+    background:var(--accent);color:#06283d;font-weight:700;width:22px;height:22px;
+    border-radius:50%;display:grid;place-items:center;font-size:.8rem}
+  .loc{color:var(--muted);font-size:.85rem}
+  .timeline{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  .timeline div{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--border);
+    border-radius:10px;padding:12px}
+  .timeline .t{color:var(--accent);font-weight:700;font-size:1.3rem}
+  .ok{color:var(--ok)} .mut{color:var(--muted)}
+  a{color:var(--accent)}
+  @media print{body{background:#fff;color:#111}.card,header.hero,pre,.timeline div,code{background:#f4f4f4;color:#111}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>🛒 VulnShop — Guía de defensa</h1>
+  <div class="team">Equipo: <strong>The Codefockers</strong> — Daniel Saborio · Alejandro Cordero</div>
+  <div class="meta">ITI-922 · Seguridad de TI II · Universidad Técnica Nacional<br>
+    Proyecto 1 (20%) · OWASP Top 10 — 2021 · Prof. Misael Matamoros Soto</div>
+  <div class="meta">Repositorio privado:
+    <a href="https://github.com/JaimeCordero26/vulnshop-seguridad-ii">github.com/JaimeCordero26/vulnshop-seguridad-ii</a></div>
+</header>
+
+<div class="warn-box">⚠️ Aplicación con vulnerabilidades <strong>intencionales</strong>, solo para fines
+educativos. No desplegar en producción ni exponer a Internet.</div>
+
+<h2>⏱️ Guion de la defensa</h2>
+<div class="timeline">
+  <div><div class="t">5 min</div>Funcionamiento normal: registro, login, catálogo, carrito, checkout, perfil.</div>
+  <div><div class="t">10 min</div>Explotación en vivo de las vulnerabilidades (orden abajo).</div>
+  <div><div class="t">0-3 min</div>Preguntas y respuestas (ver mitigaciones al final).</div>
+</div>
+
+<h2>🚀 Arranque rápido</h2>
+<pre><code>git clone https://github.com/JaimeCordero26/vulnshop-seguridad-ii
+cd vulnshop-seguridad-ii
+npm install
+npm start            # → http://localhost:3000</code></pre>
+<p class="mut">La base de datos SQLite se crea y siembra sola. <code>npm run seed</code> la reinicia a estado limpio (útil antes de la demo).</p>
+
+<h3>Credenciales por defecto</h3>
+<table>
+  <tr><th>Usuario</th><th>Contraseña</th><th>Rol</th></tr>
+  <tr><td><code>admin</code></td><td><code>admin123</code></td><td>admin</td></tr>
+  <tr><td><code>daniel</code></td><td><code>password</code></td><td>user</td></tr>
+  <tr><td><code>alejandro</code></td><td><code>qwerty</code></td><td>user</td></tr>
+</table>
+
+<h2>🧩 Resumen OWASP Top 10 (2021)</h2>
+<table>
+  <tr><th>Categoría</th><th>Vulnerabilidad</th><th>Ubicación</th></tr>
+  <tr><td>A01</td><td>Broken Access Control — IDOR perfil, IDOR pedidos, admin sin rol</td><td><code>server.js</code> 212, 267, 280</td></tr>
+  <tr><td>A02</td><td>Cryptographic Failures — MD5 sin salt, tarjeta en texto plano, secreto hardcodeado</td><td><code>db/database.js</code> 17; <code>server.js</code> 42</td></tr>
+  <tr><td>A03</td><td>Injection — SQLi (búsqueda + login), XSS almacenado</td><td><code>server.js</code> 85, 142; <code>views/product.ejs</code> 25</td></tr>
+  <tr><td>A04</td><td>Insecure Design — token de reset predecible</td><td><code>server.js</code> 169</td></tr>
+  <tr><td>A05</td><td>Security Misconfiguration — stack trace, X-Powered-By, listado de dir, creds default</td><td><code>server.js</code> 302, 313</td></tr>
+  <tr><td>A06</td><td>Vulnerable/Outdated Components — lodash 4.17.11, express 4.17.1</td><td><code>package.json</code>; <code>server.js</code> 225</td></tr>
+  <tr><td>A07</td><td>Auth Failures — sin lockout, passwords débiles, session fixation, sin CSRF</td><td><code>server.js</code> 126, 142</td></tr>
+  <tr><td>A08</td><td>Data Integrity Failures — subida de archivos sin validación</td><td><code>server.js</code> 65</td></tr>
+  <tr><td>A09</td><td>Logging Failures — sin registro de eventos de seguridad</td><td>ausencia global</td></tr>
+  <tr><td>A10</td><td>SSRF — fetch del servidor a URL arbitraria</td><td><code>server.js</code> 288</td></tr>
+</table>
+
+<h2>💥 Explotación en vivo (orden sugerido)</h2>
+
+<div class="card">
+  <h3><span class="tag a">A03</span> SQL Injection — volcado de usuarios</h3>
+  <p>Pegar en la barra de búsqueda (o en la URL):</p>
+  <pre><code>' UNION SELECT id,username,password,role,email,address FROM users-- </code></pre>
+  <p>El catálogo muestra los usuarios y sus <strong>hashes MD5</strong> en lugar de productos.</p>
+  <p class="loc">📍 <code>server.js</code> L85-98 (consulta con concatenación directa de <code>q</code>).</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag a">A03</span> SQL Injection — bypass de login</h3>
+  <ol class="steps">
+    <li>En el login, usuario: <code>admin'-- </code> (con el espacio final).</li>
+    <li>Contraseña: cualquier cosa.</li>
+    <li>Entra como <strong>admin</strong>: el <code>--</code> comenta la verificación de contraseña.</li>
+  </ol>
+  <p class="loc">📍 <code>server.js</code> L142-160.</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag a">A03</span> XSS almacenado en comentarios</h3>
+  <ol class="steps">
+    <li>Abrir un producto y comentar: <code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code></li>
+    <li>Al recargar, el script se ejecuta en el navegador de quien vea el producto.</li>
+  </ol>
+  <p class="loc">📍 guardado <code>server.js</code> L110-116; render sin escapar <code>views/product.ejs</code> L25 (<code>&lt;%- %&gt;</code>).</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag">A01</span> IDOR — perfil ajeno con datos sensibles</h3>
+  <ol class="steps">
+    <li>Login como <code>daniel</code> / <code>password</code>.</li>
+    <li>Visitar <code>/profile/1</code> → perfil del admin con su <strong>tarjeta</strong> en texto plano.</li>
+  </ol>
+  <p class="loc">📍 <code>server.js</code> L212-219.</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag">A01</span> IDOR — pedidos ajenos + escalada al panel admin</h3>
+  <ol class="steps">
+    <li>Como <code>daniel</code>, abrir <code>/orders/1</code> (pedido de otro usuario).</li>
+    <li>Abrir <code>/admin</code> siendo usuario normal → lista de todos los usuarios, hashes y tarjetas.</li>
+  </ol>
+  <p class="loc">📍 <code>server.js</code> L267-273 (pedidos) y L280-285 (admin sin check de rol).</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag">A02</span> Cryptographic Failures — crackear MD5</h3>
+  <ol class="steps">
+    <li>Tomar un hash del panel admin o del dump SQLi.</li>
+    <li><code>0192023a7bbd73250516f069df18b500</code> = <code>admin123</code> (revertible al instante en CrackStation / rainbow tables).</li>
+    <li>Mostrar también la tarjeta legible en el perfil y el secreto de sesión hardcodeado en <code>server.js</code>.</li>
+  </ol>
+  <p class="loc">📍 <code>db/database.js</code> L17-21; <code>server.js</code> L42-50.</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag">A04</span> Insecure Design — reset con token predecible</h3>
+  <ol class="steps">
+    <li>El token es <code>1000 + id</code>. El admin es id=1 → token <strong>1001</strong>.</li>
+    <li>Visitar <code>/reset?token=1001</code> y poner nueva contraseña: toma de cuenta sin acceso al correo.</li>
+  </ol>
+  <p class="loc">📍 <code>server.js</code> L169-195.</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag">A10</span> SSRF — importar imagen desde URL</h3>
+  <ol class="steps">
+    <li>En <code>/admin</code>, campo "Importar imagen desde URL".</li>
+    <li>Enviar <code>http://127.0.0.1:3000/files</code> (o un recurso interno): el servidor lo trae y devuelve el contenido.</li>
+    <li>En la nube, <code>http://169.254.169.254/latest/meta-data/</code> expondría credenciales de instancia.</li>
+  </ol>
+  <p class="loc">📍 <code>server.js</code> L288-299.</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag">A08</span> Subida de archivos sin validación</h3>
+  <ol class="steps">
+    <li>En el perfil, subir <code>evil.html</code> con <code>&lt;script&gt;alert('xss')&lt;/script&gt;</code>.</li>
+    <li>Abrir <code>/uploads/evil.html</code>: el servidor lo sirve y el navegador ejecuta el script.</li>
+    <li>Ver el listado de directorio en <code>/files</code> (A05).</li>
+  </ol>
+  <p class="loc">📍 <code>server.js</code> L65-72 (nombre original sin sanitizar).</p>
+</div>
+
+<div class="card">
+  <h3><span class="tag">A05</span> / <span class="tag">A06</span> / <span class="tag">A07</span> / <span class="tag">A09</span> Rápidas</h3>
+  <ul>
+    <li><strong>A05</strong>: <code>/search?q='</code> muestra stack trace; <code>curl -I /</code> revela <code>X-Powered-By: Express</code>.</li>
+    <li><strong>A06</strong>: <code>npm audit</code> lista CVE de lodash 4.17.11 (CVE-2019-10744) y express 4.17.1.</li>
+    <li><strong>A07</strong>: fuerza bruta sin bloqueo; registrar con password <code>1</code>; sin token CSRF.</li>
+    <li><strong>A09</strong>: tras los ataques, el servidor no registró ningún evento de seguridad.</li>
+  </ul>
+</div>
+
+<h2>🛡️ Mitigaciones (para el Q&A)</h2>
+<table>
+  <tr><th>Vuln</th><th>Cómo se corrige</th></tr>
+  <tr><td>SQLi</td><td>Consultas parametrizadas / prepared statements (ya usadas en el resto del código).</td></tr>
+  <tr><td>XSS</td><td>Escapar la salida (<code>&lt;%= %&gt;</code>), CSP, sanitización.</td></tr>
+  <tr><td>IDOR / Access Control</td><td>Verificar propiedad del recurso y rol en cada petición (autorización server-side).</td></tr>
+  <tr><td>Crypto</td><td>bcrypt/argon2 con salt; cifrar datos sensibles; secreto desde variables de entorno.</td></tr>
+  <tr><td>Insecure Design</td><td>Tokens aleatorios criptográficos con expiración y un solo uso.</td></tr>
+  <tr><td>Misconfig</td><td>Ocultar stack traces, desactivar <code>x-powered-by</code>, sin listado de directorios, sin creds default.</td></tr>
+  <tr><td>Componentes</td><td>Actualizar dependencias; <code>npm audit fix</code>; SCA en CI.</td></tr>
+  <tr><td>Auth</td><td>Rate limiting / lockout, política de contraseñas, regenerar sesión, tokens anti-CSRF.</td></tr>
+  <tr><td>Upload</td><td>Validar tipo/tamaño, renombrar, almacenar fuera del webroot.</td></tr>
+  <tr><td>Logging</td><td>Registrar eventos de seguridad y monitorear/alertar.</td></tr>
+  <tr><td>SSRF</td><td>Lista blanca de destinos, bloquear IPs internas/loopback, validar esquema.</td></tr>
+</table>
+
+<p class="mut" style="margin-top:40px;text-align:center">VulnShop · The Codefockers · ITI-922 Seguridad de TI II · UTN</p>
+
+</div>
+</body>
+</html>
