@@ -55,25 +55,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Subida segura de avatares (restringido a imagenes con nombres unicos)
+// ----------------------------------------------------------------------------
+// [VULN-A08] OWASP A08 (Software and Data Integrity Failures) - Subida sin restriccion
+// Multer conserva el nombre original sin sanitizar y no valida extensiones.
+// Permite subir cualquier archivo (ej. .html) y servirlo directamente desde /uploads.
+// ----------------------------------------------------------------------------
 const upload = multer({
   storage: multer.diskStorage({
     destination: path.join(__dirname, 'uploads'),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      const uniqueName = 'avatar-' + Date.now() + '-' + Math.round(Math.random() * 1e9) + ext;
-      cb(null, uniqueName);
-    }
-  }),
-  limits: { fileSize: 2 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (allowedExtensions.includes(ext) && file.mimetype.startsWith('image/')) {
-      return cb(null, true);
-    }
-    cb(new Error('Solo se permiten archivos de imagen validos (PNG, JPG, WEBP).'));
-  }
+    filename: (req, file, cb) => cb(null, file.originalname)
+  })
 });
 
 // ============================================================================
