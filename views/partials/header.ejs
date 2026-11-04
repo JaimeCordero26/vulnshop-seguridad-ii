@@ -18,7 +18,9 @@
       <% if (currentUser) { %>
         <a href="/orders">Mis pedidos</a>
         <a href="/profile">Perfil</a>
-        <a href="/admin">Admin</a>
+        <% if (currentUser.role === 'admin') { %>
+          <a href="/admin">Admin</a>
+        <% } %>
         <span class="user">👤 <%= currentUser.username %></span>
         <a href="/logout">Salir</a>
       <% } else { %>
