@@ -6,3 +6,7 @@ npm-debug.log*
 .DS_Store
 defensa.html
 demo.html
+
+# Archives
+*.tar.gz
+*.zip
