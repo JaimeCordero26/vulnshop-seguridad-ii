@@ -1,0 +1,50 @@
+===============================================================================
+EVIDENCIAS DE CONTROL DE VERSIONES (GIT) — PROYECTO 1
+Curso: ITI-922, Seguridad de TI II · Universidad Técnica Nacional
+Equipo: The Codefockers
+Integrantes: Daniel Saborio · Alejandro Cordero
+Repositorio: https://github.com/JaimeCordero26/vulnshop-seguridad-ii
+===============================================================================
+
+1. ESTADÍSTICAS DE COMMITS POR INTEGRANTE
+-------------------------------------------------------------------------------
+Comando: git shortlog -sne --all
+
+    12	Daniel Saborio <danisabo8713@gmail.com>
+     7	Alejandro Cordero <alecordero2610@gmail.com>
+
+2. RESUMEN DE RAMAS
+-------------------------------------------------------------------------------
+  Saborio                f82dbc1 Refactorizar a 6 vulnerabilidades clave para defensa e ignorar defensa.html
+* main                   fb2a8f6 Implementar Cinematic Style con imagenes del catalogo reflejadas dinamicamente por URL
+  remotes/origin/HEAD    -> origin/main
+  remotes/origin/Saborio f82dbc1 Refactorizar a 6 vulnerabilidades clave para defensa e ignorar defensa.html
+  remotes/origin/main    fb2a8f6 Implementar Cinematic Style con imagenes del catalogo reflejadas dinamicamente por URL
+
+3. HISTORIAL COMPLETO DE COMMITS (ÁRBOL CRONOLÓGICO)
+-------------------------------------------------------------------------------
+* fb2a8f6 - Daniel Saborio <danisabo8713@gmail.com> (2026-11-04): Implementar Cinematic Style con imagenes del catalogo reflejadas dinamicamente por URL
+* 29fed1e - Daniel Saborio <danisabo8713@gmail.com> (2026-11-04): Ocultar enlace Admin en frontend para usuarios sin rol admin
+* a322923 - Daniel Saborio <danisabo8713@gmail.com> (2026-11-03): Pre-sembrar reset_token 1001 para admin en seed
+* ec61837 - Daniel Saborio <danisabo8713@gmail.com> (2026-11-03): Ignorar demo.html en gitignore
+* b456299 - Daniel Saborio <danisabo8713@gmail.com> (2026-11-03): Actualizar referencias y endpoints a OWASP Top 10 - 2025
+* 0300e70 - Daniel Saborio <danisabo8713@gmail.com> (2026-11-03): Ajustar subida de archivos para OWASP A08
+* f82dbc1 - Daniel Saborio <danisabo8713@gmail.com> (2026-11-03): Refactorizar a 6 vulnerabilidades clave para defensa e ignorar defensa.html
+* 8a02448 - Alejandro Cordero <alecordero2610@gmail.com> (2026-10-28): docs: guia de defensa en HTML (guion, explotacion y mitigaciones)
+* 5be20d9 - Alejandro Cordero <alecordero2610@gmail.com> (2026-10-21): chore: agregar package-lock para instalaciones reproducibles
+* 4b5b210 - Daniel Saborio <danisabo8713@gmail.com> (2026-10-28): docs: README con catalogo OWASP, despliegue y contribuciones
+* c450d28 - Alejandro Cordero <alecordero2610@gmail.com> (2026-10-26): feat(admin): panel de administracion y listado de archivos subidos
+* 80fb163 - Daniel Saborio <danisabo8713@gmail.com> (2026-10-25): feat(cuenta): vista de perfil de usuario con subida de avatar
+* e1a8923 - Alejandro Cordero <alecordero2610@gmail.com> (2026-10-24): feat(tienda): vistas de carrito, listado y detalle de pedidos
+* 1704846 - Daniel Saborio <danisabo8713@gmail.com> (2026-10-23): feat(auth): vistas de login, registro y recuperacion de contrasena
+* c292864 - Alejandro Cordero <alecordero2610@gmail.com> (2026-10-22): feat(catalogo): vistas de catalogo y detalle de producto con comentarios
+* c1baf82 - Daniel Saborio <danisabo8713@gmail.com> (2026-10-22): feat(server): servidor Express con rutas de auth, busqueda, carrito, admin y SSRF
+* 1dfc3b3 - Alejandro Cordero <alecordero2610@gmail.com> (2026-10-21): feat(ui): layout base, estilos y partials de header/footer
+* fe362d8 - Daniel Saborio <danisabo8713@gmail.com> (2026-10-20): feat(db): esquema SQLite y semilla de datos de prueba
+* 75ef27f - Alejandro Cordero <alecordero2610@gmail.com> (2026-10-20): chore: estructura inicial del proyecto y dependencias
+
+4. CONTRIBUCIÓN EQUITATIVA Y COLABORATIVA
+-------------------------------------------------------------------------------
+El desarrollo se realizó mediante control de versiones desde el inicio del proyecto,
+con ramas individuales y commits descriptivos y frecuentes por parte de ambos
+integrantes del equipo (Daniel Saborio y Alejandro Cordero).
