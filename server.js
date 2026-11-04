@@ -208,7 +208,7 @@ app.post('/reset', (req, res) => {
 // ============================================================================
 
 function requireLogin(req, res, next) {
-  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user || !req.session.user.id) return res.redirect('/login');
   next();
 }
 
@@ -248,30 +248,60 @@ app.get('/cart', (req, res) => {
   res.render('cart', { cart, total });
 });
 
-app.post('/cart/checkout', requireLogin, (req, res) => {
-  const cart = req.session.cart || [];
-  const total = cart.reduce((s, i) => s + i.price, 0);
-  db.prepare('INSERT INTO orders (user_id, total, items_json) VALUES (?, ?, ?)')
-    .run(req.session.user.id, total, JSON.stringify(cart));
-  req.session.cart = [];
-  res.redirect('/orders');
+app.post('/cart/checkout', requireLogin, (req, res, next) => {
+  try {
+    const rawCart = Array.isArray(req.session.cart) ? req.session.cart : [];
+    if (rawCart.length === 0) {
+      return res.redirect('/cart');
+    }
+    const cleanCart = rawCart.map(item => ({
+      id: Number(item.id) || 0,
+      name: String(item.name || 'Producto'),
+      price: Number(item.price) || 0
+    }));
+    const total = cleanCart.reduce((s, i) => s + i.price, 0);
+    const userId = Number(req.session.user.id);
+
+    db.prepare('INSERT INTO orders (user_id, total, items_json) VALUES (?, ?, ?)')
+      .run(userId, Number(total.toFixed(2)), JSON.stringify(cleanCart));
+    req.session.cart = [];
+    res.redirect('/orders');
+  } catch (err) {
+    console.error('[Error en Checkout]', err);
+    next(err);
+  }
 });
 
-app.get('/orders', requireLogin, (req, res) => {
-  const orders = db.prepare('SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC')
-    .all(req.session.user.id);
-  res.render('orders', { orders });
+app.get('/orders', requireLogin, (req, res, next) => {
+  try {
+    const userId = Number(req.session.user.id);
+    const orders = db.prepare('SELECT * FROM orders WHERE user_id = ? ORDER BY id DESC')
+      .all(userId);
+    res.render('orders', { orders });
+  } catch (err) {
+    console.error('[Error en /orders]', err);
+    next(err);
+  }
 });
 
 // Consulta de pedido con autorizacion adecuada
-app.get('/orders/:id', requireLogin, (req, res) => {
-  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
-  if (!order) return res.status(404).send('Pedido no encontrado');
-  if (order.user_id !== req.session.user.id && req.session.user.role !== 'admin') {
-    return res.status(403).send('Acceso denegado: este pedido pertenece a otro usuario.');
+app.get('/orders/:id', requireLogin, (req, res, next) => {
+  try {
+    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
+    if (!order) return res.status(404).send('Pedido no encontrado');
+    if (order.user_id !== req.session.user.id && req.session.user.role !== 'admin') {
+      return res.status(403).send('Acceso denegado: este pedido pertenece a otro usuario.');
+    }
+    try {
+      order.items = JSON.parse(order.items_json || '[]');
+    } catch {
+      order.items = [];
+    }
+    res.render('order', { order });
+  } catch (err) {
+    console.error('[Error en /orders/:id]', err);
+    next(err);
   }
-  order.items = JSON.parse(order.items_json || '[]');
-  res.render('order', { order });
 });
 
 // ============================================================================
@@ -309,8 +339,24 @@ app.post('/admin/import-image', requireLogin, async (req, res) => {
 // ============================================================================
 
 app.use((err, req, res, next) => {
-  console.error('[Error interno]', err.message);
-  res.status(500).send('<h1>500 - Error interno</h1><p>Ocurrio un error procesando su solicitud.</p>');
+  console.error('[Error interno]', err);
+  res.status(500).send(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <title>500 - Error interno</title>
+      <link rel="stylesheet" href="/public/css/style.css">
+    </head>
+    <body>
+      <main class="container" style="max-width: 600px; margin: 4rem auto; text-align: center;">
+        <h1 style="color: #ef4444; font-size: 2.2rem; margin-bottom: 1rem;">500 - Error interno</h1>
+        <p style="color: #ccc; margin-bottom: 1.5rem;">Ocurrio un error procesando su solicitud: <code>${err.message || 'Error del servidor'}</code></p>
+        <p><a href="/" style="color: #06B6D4;">&larr; Volver al inicio</a> &nbsp;|&nbsp; <a href="/cart" style="color: #06B6D4;">Ir al carrito</a></p>
+      </main>
+    </body>
+    </html>
+  `);
 });
 
 app.listen(PORT, () => {
