@@ -7,9 +7,8 @@
  *  Equipo: The Codefockers (Daniel Saborio, Alejandro Cordero)
  * ============================================================================
  *
- *  ADVERTENCIA: Esta aplicacion contiene 6 vulnerabilidades INTENCIONALES
- *  seleccionadas especificamente para la defensa en vivo (OWASP Top 10 2021).
- *  Cada fallo esta etiquetado con [VULN-01] a [VULN-06].
+ *  ADVERTENCIA: Esta aplicacion contiene vulnerabilidades INTENCIONALES
+ *  clasificadas segun la edicion oficial del OWASP Top 10 — 2025.
  * ============================================================================
  */
 
@@ -118,10 +117,14 @@ app.post('/product/:id/comment', (req, res) => {
 
 app.get('/register', (req, res) => res.render('register', { error: null }));
 
+// ----------------------------------------------------------------------------
+// [VULN-A07] OWASP A07:2025 (Authentication Failures) - Contraseñas debiles
+// No se valida longitud minima ni complejidad de la clave; acepta passwords como "1".
+// ----------------------------------------------------------------------------
 app.post('/register', (req, res) => {
   const { username, email, password, full_name } = req.body;
-  if (!username || !password || password.length < 4) {
-    return res.render('register', { error: 'La contraseña debe tener al menos 4 caracteres.' });
+  if (!username || !password) {
+    return res.render('register', { error: 'Complete todos los campos requeridos.' });
   }
   try {
     db.prepare(
@@ -137,7 +140,7 @@ app.post('/register', (req, res) => {
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
 // ----------------------------------------------------------------------------
-// [VULN-01] OWASP A03 (Injection) - SQL Injection en Login (Bypass de autenticacion)
+// [VULN-A05] OWASP A05:2025 (Injection) - SQL Injection en Login (Bypass de autenticacion)
 // El campo username se concatena directamente dentro de la consulta SQL.
 // Permite ingresar como admin con el usuario: admin' --
 // ----------------------------------------------------------------------------
@@ -166,7 +169,7 @@ app.get('/logout', (req, res) => {
 });
 
 // ----------------------------------------------------------------------------
-// [VULN-05] OWASP A04 (Insecure Design) - Token de Recuperacion Predecible
+// [VULN-A06] OWASP A06:2025 (Insecure Design) - Token de Recuperacion Predecible
 // El token de restablecimiento es predecible: 1000 + id de usuario.
 // El atacante puede deducir el token del admin (id=1 -> 1001) y resetear su clave.
 // ----------------------------------------------------------------------------
@@ -214,9 +217,9 @@ app.get('/profile', requireLogin, (req, res) => {
 });
 
 // ----------------------------------------------------------------------------
-// [VULN-03] OWASP A01 (Broken Access Control) - IDOR en Perfil
-// Muestra el perfil del :id solicitado sin verificar que corresponda
-// al usuario en sesion. Expone direccion, email y tarjeta de credito de otros.
+// [VULN-A04] OWASP A04:2025 (Cryptographic Failures) / [VULN-A01] (Broken Access Control)
+// Muestra el perfil del :id solicitado exponiendo la tarjeta de credito sin cifrar
+// ni enmascarar en texto plano, y sin validar autorizacion del usuario en sesion.
 // ----------------------------------------------------------------------------
 app.get('/profile/:id', requireLogin, (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
@@ -276,7 +279,7 @@ app.get('/orders/:id', requireLogin, (req, res) => {
 // ============================================================================
 
 // ----------------------------------------------------------------------------
-// [VULN-02] OWASP A01 (Broken Access Control) - Escalada Vertical al Panel Admin
+// [VULN-A01] OWASP A01:2025 (Broken Access Control) - Escalada Vertical al Panel Admin
 // La ruta solo utiliza requireLogin, omitiendo verificar si el rol es 'admin'.
 // Cualquier usuario comun puede acceder al listado administrativo.
 // ----------------------------------------------------------------------------
