@@ -65,15 +65,15 @@ function seedIfEmpty() {
   if (row.n > 0) return;
 
   const insertUser = db.prepare(
-    `INSERT INTO users (username, email, password, role, full_name, address, credit_card)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO users (username, email, password, role, full_name, address, credit_card, reset_token)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   );
   insertUser.run('admin', 'admin@vulnshop.local', hashPassword('admin123'), 'admin',
-    'Administrador', 'Oficina Central, San Jose', '4111-1111-1111-1111');
+    'Administrador', 'Oficina Central, San Jose', '4111-1111-1111-1111', 1001);
   insertUser.run('daniel', 'daniel@vulnshop.local', hashPassword('password'), 'user',
-    'Daniel Saborio', 'Alajuela, CR', '5500-0000-0000-0004');
+    'Daniel Saborio', 'Alajuela, CR', '5500-0000-0000-0004', null);
   insertUser.run('alejandro', 'alejandro@vulnshop.local', hashPassword('qwerty'), 'user',
-    'Alejandro Cordero', 'Heredia, CR', '3400-0000-0000-009');
+    'Alejandro Cordero', 'Heredia, CR', '3400-0000-0000-009', null);
 
   const insertProduct = db.prepare(
     'INSERT INTO products (name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?)'
