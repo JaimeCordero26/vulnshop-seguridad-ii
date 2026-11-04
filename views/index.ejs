@@ -1,30 +1,114 @@
 <%- include('partials/header') %>
 
 <% if (query !== null) { %>
-  <h1>Resultados para "<%= query %>"</h1>
-  <p><a href="/">&larr; Volver al catalogo</a></p>
+  <!-- VISTA DE RESULTADOS DE BÚSQUEDA -->
+  <div class="section-header">
+    <h1 class="section-title">Resultados para "<%= query %>"</h1>
+    <a href="/" class="hint">&larr; Volver al catálogo completo</a>
+  </div>
 <% } else { %>
-  <h1>Catalogo</h1>
+  <!-- HERO CINEMÁTICO 3D (ROLODEX CUBE) -->
+  <section class="hero-cinematic">
+    <div class="hero-watermark">HARDWARE</div>
+    
+    <div class="hero-content">
+      <span class="hero-tag">NEXT-GEN HARDWARE ARCHITECTURE</span>
+      <h1 class="hero-title">PRECISION GEAR.<br>BRUTAL PERFORMANCE.</h1>
+      <p class="hero-subtitle">
+        Equipamiento de alto rendimiento para desarrolladores, investigadores de seguridad y gamers.
+      </p>
+
+      <!-- Cubo 3D Rolodex -->
+      <div class="cube-scene">
+        <div class="cube-wrapper">
+          <div class="cube-face face-front">
+            <img src="https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=600&q=80" alt="Mechanical Keyboard">
+            <div class="cube-face-label">01 // MECHANICAL RGB</div>
+          </div>
+          <div class="cube-face face-bottom">
+            <img src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80" alt="Gaming Mouse">
+            <div class="cube-face-label">02 // 16000 DPI OPTICAL</div>
+          </div>
+          <div class="cube-face face-back">
+            <img src="https://images.unsplash.com/photo-1547119957-637f8679db1e?auto=format&fit=crop&w=600&q=80" alt="144Hz Monitor">
+            <div class="cube-face-label">03 // 144HZ IPS PANEL</div>
+          </div>
+          <div class="cube-face face-top">
+            <img src="https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=600&q=80" alt="NVMe SSD">
+            <div class="cube-face-label">04 // NVME GEN3 SPEED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CALCULADORA / ESTIMADOR GLASSMORPHISM -->
+  <div class="calculator-box">
+    <div class="calculator-header">
+      <div>
+        <h3 class="calculator-title">⚡ Estimador de Setup</h3>
+        <p class="hint">Calcula una estimación interactiva según los módulos de hardware que necesites</p>
+      </div>
+      <div class="calculator-price" id="calcPriceDisplay">$375.00</div>
+    </div>
+    <input type="range" min="1" max="8" value="3" class="calc-slider" id="budgetSlider" oninput="updateBudget(this.value)">
+  </div>
+  <script>
+    function updateBudget(val) {
+      document.getElementById('calcPriceDisplay').textContent = '$' + (val * 125).toFixed(2);
+    }
+  </script>
+
+  <!-- ENCABEZADO DE CATÁLOGO (10vw tracking-tighter) -->
+  <div class="catalog-section-head">
+    <div class="catalog-big-title">01 // CATALOG</div>
+    <div class="catalog-meta-bar">
+      <span>HIGH-END HARDWARE ARCHIVE</span>
+      <span>[ <%= products.length %> ARTÍCULOS EN STOCK ]</span>
+    </div>
+  </div>
 <% } %>
 
 <% if (products.length === 0) { %>
-  <p>No se encontraron productos.</p>
-<% } %>
+  <p class="hint" style="text-align: center; margin: 4rem 0;">No se encontraron productos disponibles.</p>
+<% } else { %>
+  <!-- GRILLA DE CATÁLOGO: CADA PRODUCTO CARGA SU IMAGEN MEDIANTE SU URL (image_url) -->
+  <div class="grid">
+    <% products.forEach(function (p, index) { %>
+      <div class="card">
+        <div class="card-mac-bar">
+          <div class="mac-dots-wrap">
+            <span class="mac-dot dot-red"></span>
+            <span class="mac-dot dot-yellow"></span>
+            <span class="mac-dot dot-green"></span>
+          </div>
+          <span class="card-mac-title">ITEM_0<%= index + 1 %>.SYS</span>
+          <span class="card-mac-tag">IN_STOCK</span>
+        </div>
 
-<div class="grid">
-  <% products.forEach(function (p) { %>
-    <div class="card">
-      <a href="/product/<%= p.id %>">
-        <img src="<%= p.image_url %>" alt="<%= p.name %>" loading="lazy">
-      </a>
-      <h3><a href="/product/<%= p.id %>"><%= p.name %></a></h3>
-      <p class="price">$<%= Number(p.price).toFixed(2) %></p>
-      <form action="/cart/add" method="POST">
-        <input type="hidden" name="product_id" value="<%= p.id %>">
-        <button type="submit">Agregar al carrito</button>
-      </form>
-    </div>
-  <% }); %>
-</div>
+        <div class="card-img-wrap">
+          <a href="/product/<%= p.id %>">
+            <img src="<%= p.image_url %>" alt="<%= p.name %>" loading="lazy">
+          </a>
+        </div>
+
+        <div class="card-body">
+          <h3><a href="/product/<%= p.id %>"><%= p.name %></a></h3>
+          <p class="hint"><%= p.description %></p>
+        </div>
+
+        <div class="card-footer">
+          <span class="price">$<%= Number(p.price).toFixed(2) %></span>
+          <span class="stock-badge">Stock: <%= p.stock %></span>
+        </div>
+
+        <form action="/cart/add" method="POST">
+          <input type="hidden" name="product_id" value="<%= p.id %>">
+          <button type="submit" class="btn-block">Agregar al carrito</button>
+        </form>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
 
 <%- include('partials/footer') %>

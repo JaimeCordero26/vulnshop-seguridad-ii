@@ -79,12 +79,12 @@ function seedIfEmpty() {
     'INSERT INTO products (name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?)'
   );
   const products = [
-    ['Teclado mecanico RGB', 'Switches azules, retroiluminado, USB-C.', 45.99, 25, 'https://picsum.photos/seed/kbd/400/300'],
-    ['Mouse gamer 16000 DPI', 'Sensor optico, 7 botones programables.', 29.5, 40, 'https://picsum.photos/seed/mouse/400/300'],
-    ['Monitor 27" 144Hz', 'Panel IPS, 1ms, FreeSync.', 219.0, 10, 'https://picsum.photos/seed/monitor/400/300'],
-    ['Auriculares inalambricos', 'Cancelacion de ruido, 30h bateria.', 89.99, 18, 'https://picsum.photos/seed/head/400/300'],
-    ['Webcam 1080p', 'Microfono dual, enfoque automatico.', 34.0, 30, 'https://picsum.photos/seed/cam/400/300'],
-    ['SSD NVMe 1TB', 'Lectura 3500 MB/s, PCIe Gen3.', 74.9, 22, 'https://picsum.photos/seed/ssd/400/300']
+    ['Teclado mecanico RGB', 'Switches azules, retroiluminado, USB-C.', 45.99, 25, 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=600&q=80'],
+    ['Mouse gamer 16000 DPI', 'Sensor optico, 7 botones programables.', 29.5, 40, 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80'],
+    ['Monitor 27" 144Hz', 'Panel IPS, 1ms, FreeSync.', 219.0, 10, 'https://images.unsplash.com/photo-1547119957-637f8679db1e?auto=format&fit=crop&w=600&q=80'],
+    ['Auriculares inalambricos', 'Cancelacion de ruido, 30h bateria.', 89.99, 18, 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80'],
+    ['Webcam 1080p', 'Microfono dual, enfoque automatico.', 34.0, 30, 'https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=600&q=80'],
+    ['SSD NVMe 1TB', 'Lectura 3500 MB/s, PCIe Gen3.', 74.9, 22, 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=600&q=80']
   ];
   for (const p of products) insertProduct.run(...p);
 
