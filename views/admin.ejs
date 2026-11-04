@@ -1,18 +1,19 @@
 <%- include('partials/header') %>
 <h1>Panel de administracion</h1>
 <p class="hint">Esta pagina deberia exigir rol <code>admin</code>, pero solo exige
-  estar autenticado (Broken Access Control).</p>
+  estar autenticado (Broken Access Control - Escalada Vertical).</p>
 
-<h2>Usuarios</h2>
+<h2>Usuarios registrados</h2>
 <table class="list">
-  <thead><tr><th>ID</th><th>Usuario</th><th>Rol</th><th>Password (MD5)</th><th>Tarjeta</th></tr></thead>
+  <thead><tr><th>ID</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Direccion</th><th>Tarjeta</th></tr></thead>
   <tbody>
     <% users.forEach(function (u) { %>
       <tr>
         <td><%= u.id %></td>
         <td><%= u.username %></td>
+        <td><%= u.email %></td>
         <td><%= u.role %></td>
-        <td class="mono"><%= u.password %></td>
+        <td><%= u.address %></td>
         <td class="mono"><%= u.credit_card %></td>
       </tr>
     <% }); %>
@@ -21,9 +22,9 @@
 
 <h2>Importar imagen desde URL</h2>
 <p class="hint">Trae una URL del lado del servidor (SSRF: prueba
-  <code>http://localhost:3000/admin</code> o metadata interna).</p>
+  <code>http://localhost:3000/admin</code> o <code>http://127.0.0.1:3000/</code>).</p>
 <form action="/admin/import-image" method="POST">
-  <input type="text" name="url" placeholder="https://..." size="50">
+  <input type="text" name="url" placeholder="http://127.0.0.1:3000/" size="50">
   <button type="submit">Traer</button>
 </form>
 <% if (error) { %><p class="error"><%= error %></p><% } %>

@@ -2,15 +2,14 @@
 
 /*
  * ============================================================================
- *  VulnShop - servidor Express
+ *  VulnShop - Servidor Express
  *  Proyecto academico ITI-922 (Seguridad de TI II) - UTN
  *  Equipo: The Codefockers (Daniel Saborio, Alejandro Cordero)
  * ============================================================================
  *
- *  ADVERTENCIA: esta aplicacion contiene vulnerabilidades INTENCIONALES con
- *  fines educativos. NO debe desplegarse en produccion ni exponerse a Internet.
- *  Cada fallo esta marcado con [VULN-Axx] segun OWASP Top 10 2021. El catalogo
- *  completo con pasos de explotacion esta en README.md.
+ *  ADVERTENCIA: Esta aplicacion contiene 6 vulnerabilidades INTENCIONALES
+ *  seleccionadas especificamente para la defensa en vivo (OWASP Top 10 2021).
+ *  Cada fallo esta etiquetado con [VULN-01] a [VULN-06].
  * ============================================================================
  */
 
@@ -20,14 +19,14 @@ const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
-const _ = require('lodash'); // [VULN-A06] lodash 4.17.11: prototype pollution (CVE-2019-10744)
 
-const { db, md5 } = require('./db/database');
+const { db, hashPassword } = require('./db/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- Configuracion de vistas -------------------------------------------------
+// --- Buenas practicas de configuracion base ----------------------------------
+app.disable('x-powered-by'); // Mitigacion de fingerprinting informativo
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -35,41 +34,46 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// [VULN-A05] Security Misconfiguration: no se desactiva X-Powered-By, por lo que
-// el servidor revela "Express" en las cabeceras (fingerprinting). Lo correcto:
-// app.disable('x-powered-by').
-
-// [VULN-A02] Cryptographic Failures / [VULN-A07]: secreto de sesion HARDCODEADO
-// en el repositorio, debil y reutilizado. Ademas la cookie no es httpOnly real
-// ni secure, sin rotacion. Lo correcto: secreto aleatorio desde variable de
-// entorno y cookie { httpOnly: true, secure: true, sameSite: 'lax' }.
+// Configuracion de sesion
 app.use(session({
-  secret: 'keyboard_cat_123',
+  secret: process.env.SESSION_SECRET || 'vulnshop-secure-defense-session-secret-2026',
   resave: false,
-  saveUninitialized: true,
-  cookie: { httpOnly: false }
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: 'lax'
+  }
 }));
 
-// Archivos estaticos y subidas
+// Archivos estaticos
 app.use('/public', express.static(path.join(__dirname, 'public')));
-// [VULN-A08]/[VULN-A01]: las subidas se sirven tal cual, sin control de tipo.
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Variables disponibles en todas las vistas
+// Middleware para pasar usuario actual a las vistas
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   next();
 });
 
-// --- Subida de archivos SIN validacion ---------------------------------------
-// [VULN-A08] Software and Data Integrity Failures + [VULN-A01]: se conserva el
-// nombre original (sin sanitizar) y se acepta CUALQUIER tipo/tamano de archivo.
-// Permite subir .html/.svg (XSS), sobreescribir archivos o path traversal.
+// Subida segura de avatares (restringido a imagenes con nombres unicos)
 const upload = multer({
   storage: multer.diskStorage({
     destination: path.join(__dirname, 'uploads'),
-    filename: (req, file, cb) => cb(null, file.originalname)
-  })
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      const uniqueName = 'avatar-' + Date.now() + '-' + Math.round(Math.random() * 1e9) + ext;
+      cb(null, uniqueName);
+    }
+  }),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedExtensions.includes(ext) && file.mimetype.startsWith('image/')) {
+      return cb(null, true);
+    }
+    cb(new Error('Solo se permiten archivos de imagen validos (PNG, JPG, WEBP).'));
+  }
 });
 
 // ============================================================================
@@ -82,18 +86,15 @@ app.get('/', (req, res) => {
   res.render('index', { products, query: null });
 });
 
-// [VULN-A03] Injection (SQLi): el parametro q se concatena directamente a la
-// consulta SQL. Permite UNION-based injection para volcar la tabla users.
+// Busqueda de productos (parametrizada de forma segura)
 app.get('/search', (req, res, next) => {
   const q = req.query.q || '';
   try {
-    const sql =
-      "SELECT * FROM products WHERE name LIKE '%" + q + "%' " +
-      "OR description LIKE '%" + q + "%'";
-    const products = db.prepare(sql).all();
+    const sql = 'SELECT * FROM products WHERE name LIKE ? OR description LIKE ?';
+    const products = db.prepare(sql).all('%' + q + '%', '%' + q + '%');
     res.render('index', { products, query: q });
   } catch (err) {
-    next(err); // [VULN-A05] el error muestra la consulta/stack al atacante
+    next(err);
   }
 });
 
@@ -107,13 +108,16 @@ app.get('/product/:id', (req, res) => {
   res.render('product', { product, comments });
 });
 
-// [VULN-A03] Injection (XSS almacenado): el cuerpo del comentario se guarda sin
-// sanitizar y luego se renderiza sin escapar (<%- %> en la vista product.ejs).
-// Tambien [VULN-A07]: no hay token CSRF en el formulario.
+// ----------------------------------------------------------------------------
+// [VULN-04] OWASP A03 (Injection) - Stored XSS en Comentarios
+// El texto del comentario se inserta en la base de datos sin sanitizar y
+// luego se renderiza con <%- c.body %> (sin escapar) en views/product.ejs.
+// ----------------------------------------------------------------------------
 app.post('/product/:id/comment', (req, res) => {
   const username = (req.session.user && req.session.user.username) || 'anonimo';
+  const commentBody = req.body.body || '';
   db.prepare('INSERT INTO comments (product_id, username, body) VALUES (?, ?, ?)')
-    .run(req.params.id, username, req.body.body);
+    .run(req.params.id, username, commentBody);
   res.redirect('/product/' + req.params.id);
 });
 
@@ -125,12 +129,14 @@ app.get('/register', (req, res) => res.render('register', { error: null }));
 
 app.post('/register', (req, res) => {
   const { username, email, password, full_name } = req.body;
-  // [VULN-A07] Identification & Authentication Failures: NO se valida fortaleza
-  // de la contrasena; se aceptan passwords como "123". Sin verificacion de email.
+  if (!username || !password || password.length < 4) {
+    return res.render('register', { error: 'La contraseña debe tener al menos 4 caracteres.' });
+  }
   try {
     db.prepare(
       'INSERT INTO users (username, email, password, role, full_name) VALUES (?, ?, ?, ?, ?)'
-    ).run(username, email, md5(password), 'user', full_name || username);
+    ).run(username, email, hashPassword(password), 'user', full_name || username);
+    console.log('[Auth] Usuario registrado:', username);
     res.redirect('/login');
   } catch (err) {
     res.render('register', { error: 'El usuario ya existe.' });
@@ -139,20 +145,25 @@ app.post('/register', (req, res) => {
 
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
-// [VULN-A03] Injection (SQLi) + [VULN-A07] (sin bloqueo de intentos / fuerza bruta)
+// ----------------------------------------------------------------------------
+// [VULN-01] OWASP A03 (Injection) - SQL Injection en Login (Bypass de autenticacion)
+// El campo username se concatena directamente dentro de la consulta SQL.
+// Permite ingresar como admin con el usuario: admin' --
+// ----------------------------------------------------------------------------
 app.post('/login', (req, res, next) => {
   const { username, password } = req.body;
   try {
-    // El username se concatena -> bypass con:  admin' --
     const sql =
       "SELECT * FROM users WHERE username = '" + username + "' " +
-      "AND password = '" + md5(password) + "'";
+      "AND password = '" + hashPassword(password) + "'";
     const user = db.prepare(sql).get();
+
     if (user) {
-      // [VULN-A07] Session fixation: NO se regenera el id de sesion tras el login.
+      console.log('[Auth] Inicio de sesion exitoso:', user.username, '(Rol:', user.role + ')');
       req.session.user = { id: user.id, username: user.username, role: user.role };
       return res.redirect('/');
     }
+    console.log('[Auth] Fallo de inicio de sesion para usuario:', username);
     res.render('login', { error: 'Credenciales invalidas.' });
   } catch (err) {
     next(err);
@@ -163,12 +174,13 @@ app.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/'));
 });
 
-// --- Recuperacion de contrasena (diseno inseguro) ----------------------------
+// ----------------------------------------------------------------------------
+// [VULN-05] OWASP A04 (Insecure Design) - Token de Recuperacion Predecible
+// El token de restablecimiento es predecible: 1000 + id de usuario.
+// El atacante puede deducir el token del admin (id=1 -> 1001) y resetear su clave.
+// ----------------------------------------------------------------------------
 app.get('/forgot', (req, res) => res.render('forgot', { message: null }));
 
-// [VULN-A04] Insecure Design: el token de reset es PREDECIBLE (1000 + id de
-// usuario). Un atacante puede adivinar el token de cualquier usuario (p.ej. el
-// admin es id=1 -> token 1001) y tomar control de la cuenta.
 app.post('/forgot', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?')
     .get(req.body.identifier, req.body.identifier);
@@ -176,8 +188,8 @@ app.post('/forgot', (req, res) => {
   if (user) {
     const token = 1000 + user.id;
     db.prepare('UPDATE users SET reset_token = ? WHERE id = ?').run(token, user.id);
-    // En una app real el enlace se enviaria por correo; aqui lo mostramos.
     message = 'Enlace de recuperacion: /reset?token=' + token;
+    console.log('[Auth] Token de reset generado para ' + user.username + ':', token);
   }
   res.render('forgot', { message });
 });
@@ -192,8 +204,9 @@ app.post('/reset', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE reset_token = ?').get(req.body.token);
   if (!user) return res.send('Token invalido o expirado.');
   db.prepare('UPDATE users SET password = ?, reset_token = NULL WHERE id = ?')
-    .run(md5(req.body.password), user.id);
-  res.send('Contrasena actualizada. <a href="/login">Iniciar sesion</a>');
+    .run(hashPassword(req.body.password), user.id);
+  console.log('[Auth] Contraseña actualizada para usuario ID:', user.id);
+  res.send('Contraseña actualizada con exito. <a href="/login">Iniciar sesion</a>');
 });
 
 // ============================================================================
@@ -209,9 +222,11 @@ app.get('/profile', requireLogin, (req, res) => {
   res.redirect('/profile/' + req.session.user.id);
 });
 
-// [VULN-A01] Broken Access Control (IDOR): se muestra el perfil del :id pedido
-// SIN comprobar que pertenezca al usuario autenticado. Expone datos sensibles
-// (direccion, numero de tarjeta en texto plano) de cualquier usuario.
+// ----------------------------------------------------------------------------
+// [VULN-03] OWASP A01 (Broken Access Control) - IDOR en Perfil
+// Muestra el perfil del :id solicitado sin verificar que corresponda
+// al usuario en sesion. Expone direccion, email y tarjeta de credito de otros.
+// ----------------------------------------------------------------------------
 app.get('/profile/:id', requireLogin, (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
   if (!user) return res.status(404).send('Usuario no encontrado');
@@ -222,18 +237,8 @@ app.post('/profile/avatar', requireLogin, upload.single('avatar'), (req, res) =>
   res.redirect('/profile/' + req.session.user.id);
 });
 
-// [VULN-A06] Vulnerable Components + prototype pollution: _.merge de lodash
-// 4.17.11 sobre datos controlados por el usuario (p.ej. __proto__) contamina
-// Object.prototype del proceso.
-app.post('/preferences', requireLogin, (req, res) => {
-  const prefs = {};
-  _.merge(prefs, req.body);
-  req.session.preferences = prefs;
-  res.redirect('/profile/' + req.session.user.id);
-});
-
 // ============================================================================
-//  CARRITO Y PEDIDOS
+//  CARRITO Y PEDIDOS (Rutas protegidas contra IDOR)
 // ============================================================================
 
 app.post('/cart/add', (req, res) => {
@@ -264,11 +269,13 @@ app.get('/orders', requireLogin, (req, res) => {
   res.render('orders', { orders });
 });
 
-// [VULN-A01] Broken Access Control (IDOR): cualquier usuario autenticado puede
-// ver el pedido de cualquier otro cambiando el :id. No se valida el propietario.
+// Consulta de pedido con autorizacion adecuada
 app.get('/orders/:id', requireLogin, (req, res) => {
   const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
   if (!order) return res.status(404).send('Pedido no encontrado');
+  if (order.user_id !== req.session.user.id && req.session.user.role !== 'admin') {
+    return res.status(403).send('Acceso denegado: este pedido pertenece a otro usuario.');
+  }
   order.items = JSON.parse(order.items_json || '[]');
   res.render('order', { order });
 });
@@ -277,19 +284,23 @@ app.get('/orders/:id', requireLogin, (req, res) => {
 //  PANEL DE ADMINISTRACION
 // ============================================================================
 
-// [VULN-A01] Broken Access Control (escalada vertical): el panel solo exige
-// estar autenticado, NO exige rol admin. Cualquier usuario normal accede al
-// listado de todos los usuarios con sus hashes y tarjetas.
+// ----------------------------------------------------------------------------
+// [VULN-02] OWASP A01 (Broken Access Control) - Escalada Vertical al Panel Admin
+// La ruta solo utiliza requireLogin, omitiendo verificar si el rol es 'admin'.
+// Cualquier usuario comun puede acceder al listado administrativo.
+// ----------------------------------------------------------------------------
 app.get('/admin', requireLogin, (req, res) => {
-  const users = db.prepare('SELECT * FROM users').all();
+  const users = db.prepare('SELECT id, username, email, role, full_name, address, credit_card FROM users').all();
   res.render('admin', { users, fetched: null, error: null });
 });
 
-// [VULN-A10] Server-Side Request Forgery: el servidor hace fetch a la URL que
-// indique el usuario, sin lista blanca ni validacion. Permite leer servicios
-// internos (metadata cloud, localhost, red interna) o file:// via el servidor.
-app.post('/admin/import-image', requireLogin, async (req, res, next) => {
-  const users = db.prepare('SELECT * FROM users').all();
+// ----------------------------------------------------------------------------
+// [VULN-06] OWASP A10 (Server-Side Request Forgery) - SSRF en Importacion
+// El servidor ejecuta fetch a cualquier URL provista por el usuario sin lista
+// blanca ni validacion, permitiendo alcanzar servicios internos (localhost, etc.).
+// ----------------------------------------------------------------------------
+app.post('/admin/import-image', requireLogin, async (req, res) => {
+  const users = db.prepare('SELECT id, username, email, role, full_name, address, credit_card FROM users').all();
   try {
     const r = await fetch(req.body.url);
     const text = await r.text();
@@ -299,27 +310,16 @@ app.post('/admin/import-image', requireLogin, async (req, res, next) => {
   }
 });
 
-// [VULN-A05] Security Misconfiguration: listado de directorio de /uploads.
-app.get('/files', (req, res) => {
-  const dir = path.join(__dirname, 'uploads');
-  const files = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
-  res.render('files', { files });
-});
-
 // ============================================================================
-//  MANEJO DE ERRORES
+//  MANEJO DE ERRORES (Sin exponer stack traces)
 // ============================================================================
 
-// [VULN-A05] Security Misconfiguration / [VULN-A09] Logging Failures: se expone
-// el stack trace completo al cliente y NO se registra ningun evento de
-// seguridad (logins fallidos, accesos, errores) en ningun log.
 app.use((err, req, res, next) => {
-  res.status(500).send(
-    '<h1>Error interno</h1><pre>' + (err.stack || err) + '</pre>'
-  );
+  console.error('[Error interno]', err.message);
+  res.status(500).send('<h1>500 - Error interno</h1><p>Ocurrio un error procesando su solicitud.</p>');
 });
 
 app.listen(PORT, () => {
   console.log('VulnShop escuchando en http://localhost:' + PORT);
-  console.log('Usuarios de prueba: admin/admin123, daniel/password, alejandro/qwerty');
+  console.log('Credenciales de prueba: admin/admin123, daniel/password, alejandro/qwerty');
 });

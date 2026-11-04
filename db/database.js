@@ -2,9 +2,8 @@
 
 /*
  * Modulo de base de datos (SQLite via node:sqlite nativo).
- *
- * NOTA ACADEMICA: este archivo contiene decisiones de diseno INSEGURAS de forma
- * INTENCIONAL (ver README, catalogo de vulnerabilidades). Marcadas con [VULN-xx].
+ * Proyecto academico ITI-922 (Seguridad de TI II) - UTN
+ * Equipo: The Codefockers (Daniel Saborio, Alejandro Cordero)
  */
 
 const path = require('node:path');
@@ -14,24 +13,23 @@ const { DatabaseSync } = require('node:sqlite');
 const DB_PATH = path.join(__dirname, '..', 'data', 'vulnshop.db');
 const db = new DatabaseSync(DB_PATH);
 
-// [VULN-A02] Cryptographic Failures: los passwords se "hashean" con MD5 (roto,
-// rapido de crackear, sin salt). Lo correcto seria bcrypt/argon2 con salt.
-function md5(text) {
-  return crypto.createHash('md5').update(String(text)).digest('hex');
+// Hash estandar SHA-256 para almacenamiento de credenciales
+function hashPassword(text) {
+  return crypto.createHash('sha256').update(String(text)).digest('hex');
 }
 
 function initSchema() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
-      username   TEXT UNIQUE NOT NULL,
-      email      TEXT,
-      password   TEXT NOT NULL,          -- [VULN-A02] MD5 sin salt
-      role       TEXT NOT NULL DEFAULT 'user',
-      full_name  TEXT,
-      address    TEXT,
-      credit_card TEXT,                   -- [VULN-A02] tarjeta en texto plano
-      reset_token INTEGER                 -- [VULN-A04] token de reset secuencial/predecible
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      username    TEXT UNIQUE NOT NULL,
+      email       TEXT,
+      password    TEXT NOT NULL,
+      role        TEXT NOT NULL DEFAULT 'user',
+      full_name   TEXT,
+      address     TEXT,
+      credit_card TEXT,
+      reset_token INTEGER                 -- [VULN-05] Token de recuperacion predecible
     );
 
     CREATE TABLE IF NOT EXISTS products (
@@ -47,7 +45,7 @@ function initSchema() {
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
       product_id INTEGER NOT NULL,
       username   TEXT,
-      body       TEXT,                    -- [VULN-A03] se renderiza sin escapar (XSS almacenado)
+      body       TEXT,                    -- [VULN-04] Renderizado sin escapar en la vista (Stored XSS)
       created_at TEXT DEFAULT (datetime('now'))
     );
 
@@ -66,17 +64,15 @@ function seedIfEmpty() {
   const row = db.prepare('SELECT COUNT(*) AS n FROM users').get();
   if (row.n > 0) return;
 
-  // [VULN-A05] Security Misconfiguration + [VULN-A07]: credenciales por defecto
-  // bien conocidas y password debilisimo para el admin.
   const insertUser = db.prepare(
     `INSERT INTO users (username, email, password, role, full_name, address, credit_card)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
   );
-  insertUser.run('admin', 'admin@vulnshop.local', md5('admin123'), 'admin',
+  insertUser.run('admin', 'admin@vulnshop.local', hashPassword('admin123'), 'admin',
     'Administrador', 'Oficina Central, San Jose', '4111-1111-1111-1111');
-  insertUser.run('daniel', 'daniel@vulnshop.local', md5('password'), 'user',
+  insertUser.run('daniel', 'daniel@vulnshop.local', hashPassword('password'), 'user',
     'Daniel Saborio', 'Alajuela, CR', '5500-0000-0000-0004');
-  insertUser.run('alejandro', 'alejandro@vulnshop.local', md5('qwerty'), 'user',
+  insertUser.run('alejandro', 'alejandro@vulnshop.local', hashPassword('qwerty'), 'user',
     'Alejandro Cordero', 'Heredia, CR', '3400-0000-0000-009');
 
   const insertProduct = db.prepare(
@@ -103,4 +99,4 @@ function seedIfEmpty() {
 initSchema();
 seedIfEmpty();
 
-module.exports = { db, md5 };
+module.exports = { db, hashPassword };

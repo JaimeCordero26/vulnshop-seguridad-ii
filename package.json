@@ -1,7 +1,7 @@
 {
   "name": "vulnshop",
   "version": "1.0.0",
-  "description": "VulnShop - aplicacion web deliberadamente vulnerable con fines educativos (OWASP Top 10 2021). Proyecto academico ITI-922 Seguridad de TI II - UTN.",
+  "description": "VulnShop - aplicacion web con 6 vulnerabilidades intencionales clave para defensa en vivo (OWASP Top 10 2021). Proyecto academico ITI-922 Seguridad de TI II - UTN.",
   "private": true,
   "scripts": {
     "start": "node --experimental-sqlite server.js",
@@ -12,9 +12,8 @@
   "dependencies": {
     "cookie-parser": "^1.4.6",
     "ejs": "^3.1.10",
-    "express": "4.17.1",
+    "express": "^4.19.2",
     "express-session": "^1.17.3",
-    "lodash": "4.17.11",
     "multer": "^1.4.5-lts.1"
   }
 }
