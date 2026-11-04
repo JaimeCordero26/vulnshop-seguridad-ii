@@ -1,14 +1,14 @@
 <%- include('partials/header') %>
 <div class="form-box">
-  <h1>Crear cuenta</h1>
+  <h1>Create Account</h1>
   <% if (error) { %><p class="error"><%= error %></p><% } %>
   <form action="/register" method="POST">
-    <label>Nombre completo <input type="text" name="full_name"></label>
-    <label>Usuario <input type="text" name="username" required></label>
+    <label>Full Name <input type="text" name="full_name"></label>
+    <label>Username <input type="text" name="username" required></label>
     <label>Email <input type="email" name="email"></label>
-    <label>Contrasena <input type="password" name="password" required></label>
-    <button type="submit">Registrarme</button>
+    <label>Password <input type="password" name="password" required></label>
+    <button type="submit">Register</button>
   </form>
-  <p><a href="/login">Ya tengo cuenta</a></p>
+  <p><a href="/login">Already have an account? Sign In</a></p>
 </div>
 <%- include('partials/footer') %>

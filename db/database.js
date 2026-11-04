@@ -54,7 +54,7 @@ function initSchema() {
       user_id    INTEGER NOT NULL,
       total      REAL NOT NULL DEFAULT 0,
       items_json TEXT,
-      status     TEXT DEFAULT 'pagado',
+      status     TEXT DEFAULT 'paid',
       created_at TEXT DEFAULT (datetime('now'))
     );
   `);
@@ -69,31 +69,31 @@ function seedIfEmpty() {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   );
   insertUser.run('admin', 'admin@vulnshop.local', hashPassword('admin123'), 'admin',
-    'Administrador', 'Oficina Central, San Jose', '4111-1111-1111-1111', 1001);
+    'Administrator', 'Headquarters, San Jose, CR', '4111-1111-1111-1111', 1001);
   insertUser.run('daniel', 'daniel@vulnshop.local', hashPassword('password'), 'user',
-    'Daniel Saborio', 'Alajuela, CR', '5500-0000-0000-0004', null);
+    'Daniel Saborio', 'Alajuela, Costa Rica', '5500-0000-0000-0004', null);
   insertUser.run('alejandro', 'alejandro@vulnshop.local', hashPassword('qwerty'), 'user',
-    'Alejandro Cordero', 'Heredia, CR', '3400-0000-0000-009', null);
+    'Alejandro Cordero', 'Heredia, Costa Rica', '3400-0000-0000-009', null);
 
   const insertProduct = db.prepare(
     'INSERT INTO products (name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?)'
   );
   const products = [
-    ['Teclado mecanico RGB', 'Switches azules, retroiluminado, USB-C.', 45.99, 25, 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=600&q=80'],
-    ['Mouse gamer 16000 DPI', 'Sensor optico, 7 botones programables.', 29.5, 40, 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80'],
-    ['Monitor 27" 144Hz', 'Panel IPS, 1ms, FreeSync.', 219.0, 10, 'https://images.unsplash.com/photo-1547119957-637f8679db1e?auto=format&fit=crop&w=600&q=80'],
-    ['Auriculares inalambricos', 'Cancelacion de ruido, 30h bateria.', 89.99, 18, 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80'],
-    ['Webcam 1080p', 'Microfono dual, enfoque automatico.', 34.0, 30, 'https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=600&q=80'],
-    ['SSD NVMe 1TB', 'Lectura 3500 MB/s, PCIe Gen3.', 74.9, 22, 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=600&q=80']
+    ['Mechanical RGB Keyboard', 'Blue clicky switches, customizable RGB backlighting, braided USB-C.', 45.99, 25, 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=600&q=80'],
+    ['Gaming Mouse 16000 DPI', 'PixArt optical sensor, 7 programmable macro buttons, ultra-light shell.', 29.5, 40, 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80'],
+    ['27" 144Hz Gaming Monitor', 'IPS panel, 1ms response time, AMD FreeSync Premium certified.', 219.0, 10, 'https://images.unsplash.com/photo-1547119957-637f8679db1e?auto=format&fit=crop&w=600&q=80'],
+    ['Wireless Noise-Canceling Headphones', 'Active ANC, 40mm drivers, 30-hour battery life with fast charge.', 89.99, 18, 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80'],
+    ['1080p Pro Webcam', 'Dual stereo microphones, auto low-light correction, privacy shutter.', 34.0, 30, 'https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=600&q=80'],
+    ['1TB NVMe PCIe SSD', 'Sequential read speeds up to 3500 MB/s, PCIe Gen3 x4 M.2 2280.', 74.9, 22, 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=600&q=80']
   ];
   for (const p of products) insertProduct.run(...p);
 
   const insertComment = db.prepare(
     'INSERT INTO comments (product_id, username, body) VALUES (?, ?, ?)'
   );
-  insertComment.run(1, 'daniel', 'Excelente teclado, muy recomendado!');
-  insertComment.run(1, 'alejandro', 'La iluminacion es increible.');
-  insertComment.run(3, 'daniel', 'El monitor vale cada centimo.');
+  insertComment.run(1, 'daniel', 'Outstanding tactile keyboard, highly recommended for developers!');
+  insertComment.run(1, 'alejandro', 'The RGB backlighting and build quality are top tier.');
+  insertComment.run(3, 'daniel', 'Flawless 144Hz display, colors are super vibrant.');
 }
 
 initSchema();

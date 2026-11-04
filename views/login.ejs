@@ -1,12 +1,12 @@
 <%- include('partials/header') %>
 <div class="form-box">
-  <h1>Iniciar sesion</h1>
+  <h1>Sign In</h1>
   <% if (error) { %><p class="error"><%= error %></p><% } %>
   <form action="/login" method="POST">
-    <label>Usuario <input type="text" name="username" required></label>
-    <label>Contrasena <input type="password" name="password" required></label>
-    <button type="submit">Entrar</button>
+    <label>Username <input type="text" name="username" required></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button type="submit">Sign In</button>
   </form>
-  <p><a href="/forgot">Olvide mi contrasena</a> · <a href="/register">Crear cuenta</a></p>
+  <p><a href="/forgot">Forgot password?</a> · <a href="/register">Create an account</a></p>
 </div>
 <%- include('partials/footer') %>

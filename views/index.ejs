@@ -1,13 +1,13 @@
 <%- include('partials/header') %>
 
 <% if (query !== null) { %>
-  <!-- VISTA DE RESULTADOS DE BÚSQUEDA -->
+  <!-- SEARCH RESULTS VIEW -->
   <div class="section-header">
-    <h1 class="section-title">Resultados para "<%= query %>"</h1>
-    <a href="/" class="hint">&larr; Volver al catálogo completo</a>
+    <h1 class="section-title">Search results for "<%= query %>"</h1>
+    <a href="/" class="hint">&larr; Back to full catalog</a>
   </div>
 <% } else { %>
-  <!-- HERO CINEMÁTICO 3D (ROLODEX CUBE) -->
+  <!-- 3D CINEMATIC HERO (ROLODEX CUBE) -->
   <section class="hero-cinematic">
     <div class="hero-watermark">HARDWARE</div>
     
@@ -15,10 +15,10 @@
       <span class="hero-tag">NEXT-GEN HARDWARE ARCHITECTURE</span>
       <h1 class="hero-title">PRECISION GEAR.<br>BRUTAL PERFORMANCE.</h1>
       <p class="hero-subtitle">
-        Equipamiento de alto rendimiento para desarrolladores, investigadores de seguridad y gamers.
+        High-performance equipment for software developers, security researchers, and gamers.
       </p>
 
-      <!-- Cubo 3D Rolodex -->
+      <!-- 3D Rolodex Cube -->
       <div class="cube-scene">
         <div class="cube-wrapper">
           <div class="cube-face face-front">
@@ -42,12 +42,12 @@
     </div>
   </section>
 
-  <!-- CALCULADORA / ESTIMADOR GLASSMORPHISM -->
+  <!-- GLASSMORPHISM SETUP CALCULATOR -->
   <div class="calculator-box">
     <div class="calculator-header">
       <div>
-        <h3 class="calculator-title">⚡ Estimador de Setup</h3>
-        <p class="hint">Calcula una estimación interactiva según los módulos de hardware que necesites</p>
+        <h3 class="calculator-title">⚡ Setup Estimator</h3>
+        <p class="hint">Calculate an interactive estimate based on the hardware modules you require</p>
       </div>
       <div class="calculator-price" id="calcPriceDisplay">$375.00</div>
     </div>
@@ -59,20 +59,20 @@
     }
   </script>
 
-  <!-- ENCABEZADO DE CATÁLOGO (10vw tracking-tighter) -->
+  <!-- CATALOG SECTION HEADER (10vw tracking-tighter) -->
   <div class="catalog-section-head">
     <div class="catalog-big-title">01 // CATALOG</div>
     <div class="catalog-meta-bar">
       <span>HIGH-END HARDWARE ARCHIVE</span>
-      <span>[ <%= products.length %> ARTÍCULOS EN STOCK ]</span>
+      <span>[ <%= products.length %> ITEMS IN STOCK ]</span>
     </div>
   </div>
 <% } %>
 
 <% if (products.length === 0) { %>
-  <p class="hint" style="text-align: center; margin: 4rem 0;">No se encontraron productos disponibles.</p>
+  <p class="hint" style="text-align: center; margin: 4rem 0;">No products found matching your search.</p>
 <% } else { %>
-  <!-- GRILLA DE CATÁLOGO: CADA PRODUCTO CARGA SU IMAGEN MEDIANTE SU URL (image_url) -->
+  <!-- CATALOG GRID -->
   <div class="grid">
     <% products.forEach(function (p, index) { %>
       <div class="card">
@@ -104,7 +104,7 @@
 
         <form action="/cart/add" method="POST">
           <input type="hidden" name="product_id" value="<%= p.id %>">
-          <button type="submit" class="btn-block">Agregar al carrito</button>
+          <button type="submit" class="btn-block">Add to Cart</button>
         </form>
       </div>
     <% }); %>

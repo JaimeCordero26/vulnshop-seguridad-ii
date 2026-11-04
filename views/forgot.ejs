@@ -1,10 +1,10 @@
 <%- include('partials/header') %>
 <div class="form-box">
-  <h1>Recuperar contrasena</h1>
+  <h1>Password Recovery</h1>
   <% if (message) { %><p class="info"><%- message %></p><% } %>
   <form action="/forgot" method="POST">
-    <label>Usuario o email <input type="text" name="identifier" required></label>
-    <button type="submit">Enviar enlace</button>
+    <label>Username or Email <input type="text" name="identifier" required></label>
+    <button type="submit">Send Reset Link</button>
   </form>
 </div>
 <%- include('partials/footer') %>

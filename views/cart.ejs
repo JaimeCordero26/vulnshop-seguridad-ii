@@ -1,10 +1,10 @@
 <%- include('partials/header') %>
-<h1>Carrito</h1>
+<h1>Shopping Cart</h1>
 <% if (cart.length === 0) { %>
-  <p>Tu carrito esta vacio. <a href="/">Ver productos</a></p>
+  <p>Your cart is empty. <a href="/">Browse products</a></p>
 <% } else { %>
   <table class="list">
-    <thead><tr><th>Producto</th><th>Precio</th></tr></thead>
+    <thead><tr><th>Product</th><th>Price</th></tr></thead>
     <tbody>
       <% cart.forEach(function (i) { %>
         <tr><td><%= i.name %></td><td>$<%= Number(i.price).toFixed(2) %></td></tr>
@@ -13,7 +13,7 @@
     <tfoot><tr><th>Total</th><th>$<%= Number(total).toFixed(2) %></th></tr></tfoot>
   </table>
   <form action="/cart/checkout" method="POST">
-    <button type="submit">Pagar</button>
+    <button type="submit">Pay Now</button>
   </form>
 <% } %>
 <%- include('partials/footer') %>

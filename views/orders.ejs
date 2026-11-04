@@ -1,10 +1,10 @@
 <%- include('partials/header') %>
-<h1>Mis pedidos</h1>
+<h1>My Orders</h1>
 <% if (orders.length === 0) { %>
-  <p>No tienes pedidos todavia.</p>
+  <p>You have no orders yet.</p>
 <% } else { %>
   <table class="list">
-    <thead><tr><th>#</th><th>Fecha</th><th>Total</th><th>Estado</th><th></th></tr></thead>
+    <thead><tr><th>#</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
     <tbody>
       <% orders.forEach(function (o) { %>
         <tr>
@@ -12,12 +12,12 @@
           <td><%= o.created_at %></td>
           <td>$<%= Number(o.total).toFixed(2) %></td>
           <td><%= o.status %></td>
-          <td><a href="/orders/<%= o.id %>">Ver</a></td>
+          <td><a href="/orders/<%= o.id %>">View</a></td>
         </tr>
       <% }); %>
     </tbody>
   </table>
-  <p class="hint">Prueba IDOR: abre <code>/orders/1</code>, <code>/orders/2</code>...
-    aunque no sean tuyos.</p>
+  <p class="hint">IDOR Test: open <code>/orders/1</code>, <code>/orders/2</code>...
+    even if they belong to another user.</p>
 <% } %>
 <%- include('partials/footer') %>

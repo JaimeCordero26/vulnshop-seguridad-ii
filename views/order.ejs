@@ -1,10 +1,10 @@
 <%- include('partials/header') %>
-<p><a href="/orders">&larr; Mis pedidos</a></p>
-<h1>Pedido #<%= order.id %></h1>
-<p>Usuario propietario (user_id): <%= order.user_id %></p>
-<p>Fecha: <%= order.created_at %> · Estado: <%= order.status %></p>
+<p><a href="/orders">&larr; My Orders</a></p>
+<h1>Order #<%= order.id %></h1>
+<p>Owner (user_id): <%= order.user_id %></p>
+<p>Date: <%= order.created_at %> · Status: <%= order.status %></p>
 <table class="list">
-  <thead><tr><th>Producto</th><th>Precio</th></tr></thead>
+  <thead><tr><th>Product</th><th>Price</th></tr></thead>
   <tbody>
     <% order.items.forEach(function (i) { %>
       <tr><td><%= i.name %></td><td>$<%= Number(i.price).toFixed(2) %></td></tr>

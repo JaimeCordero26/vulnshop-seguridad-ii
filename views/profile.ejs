@@ -1,23 +1,23 @@
 <%- include('partials/header') %>
 <div class="profile">
-  <h1>Perfil de <%= profile.username %></h1>
+  <h1>Profile for <%= profile.username %></h1>
   <table class="kv">
     <tr><th>ID</th><td><%= profile.id %></td></tr>
-    <tr><th>Nombre</th><td><%= profile.full_name %></td></tr>
+    <tr><th>Full Name</th><td><%= profile.full_name %></td></tr>
     <tr><th>Email</th><td><%= profile.email %></td></tr>
-    <tr><th>Rol</th><td><%= profile.role %></td></tr>
-    <tr><th>Direccion</th><td><%= profile.address %></td></tr>
-    <!-- [VULN-A02] dato sensible expuesto en texto plano -->
-    <tr><th>Tarjeta</th><td><%= profile.credit_card %></td></tr>
+    <tr><th>Role</th><td><%= profile.role %></td></tr>
+    <tr><th>Address</th><td><%= profile.address %></td></tr>
+    <!-- [VULN-A02] Sensitive data exposed in plain text -->
+    <tr><th>Credit Card</th><td><%= profile.credit_card %></td></tr>
   </table>
 
-  <h2>Foto de perfil</h2>
+  <h2>Profile Picture</h2>
   <form action="/profile/avatar" method="POST" enctype="multipart/form-data">
     <input type="file" name="avatar">
-    <button type="submit">Subir</button>
+    <button type="submit">Upload</button>
   </form>
 
-  <p class="hint">Prueba IDOR: cambia el numero en la URL
+  <p class="hint">IDOR Test: change the user ID in the URL
     <code>/profile/1</code>, <code>/profile/2</code>, ...</p>
 </div>
 <%- include('partials/footer') %>

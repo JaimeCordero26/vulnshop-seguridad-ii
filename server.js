@@ -91,7 +91,7 @@ app.get('/search', (req, res, next) => {
 // Detalle de producto + comentarios
 app.get('/product/:id', (req, res) => {
   const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
-  if (!product) return res.status(404).send('Producto no encontrado');
+  if (!product) return res.status(404).send('Product not found');
   const comments = db.prepare(
     'SELECT * FROM comments WHERE product_id = ? ORDER BY id DESC'
   ).all(req.params.id);
@@ -104,7 +104,7 @@ app.get('/product/:id', (req, res) => {
 // luego se renderiza con <%- c.body %> (sin escapar) en views/product.ejs.
 // ----------------------------------------------------------------------------
 app.post('/product/:id/comment', (req, res) => {
-  const username = (req.session.user && req.session.user.username) || 'anonimo';
+  const username = (req.session.user && req.session.user.username) || 'anonymous';
   const commentBody = req.body.body || '';
   db.prepare('INSERT INTO comments (product_id, username, body) VALUES (?, ?, ?)')
     .run(req.params.id, username, commentBody);
@@ -124,16 +124,16 @@ app.get('/register', (req, res) => res.render('register', { error: null }));
 app.post('/register', (req, res) => {
   const { username, email, password, full_name } = req.body;
   if (!username || !password) {
-    return res.render('register', { error: 'Complete todos los campos requeridos.' });
+    return res.render('register', { error: 'Please fill in all required fields.' });
   }
   try {
     db.prepare(
       'INSERT INTO users (username, email, password, role, full_name) VALUES (?, ?, ?, ?, ?)'
     ).run(username, email, hashPassword(password), 'user', full_name || username);
-    console.log('[Auth] Usuario registrado:', username);
+    console.log('[Auth] User registered:', username);
     res.redirect('/login');
   } catch (err) {
-    res.render('register', { error: 'El usuario ya existe.' });
+    res.render('register', { error: 'Username already exists.' });
   }
 });
 
@@ -153,12 +153,12 @@ app.post('/login', (req, res, next) => {
     const user = db.prepare(sql).get();
 
     if (user) {
-      console.log('[Auth] Inicio de sesion exitoso:', user.username, '(Rol:', user.role + ')');
+      console.log('[Auth] Successful login:', user.username, '(Role:', user.role + ')');
       req.session.user = { id: user.id, username: user.username, role: user.role };
       return res.redirect('/');
     }
-    console.log('[Auth] Fallo de inicio de sesion para usuario:', username);
-    res.render('login', { error: 'Credenciales invalidas.' });
+    console.log('[Auth] Failed login attempt for user:', username);
+    res.render('login', { error: 'Invalid credentials.' });
   } catch (err) {
     next(err);
   }
@@ -178,29 +178,29 @@ app.get('/forgot', (req, res) => res.render('forgot', { message: null }));
 app.post('/forgot', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?')
     .get(req.body.identifier, req.body.identifier);
-  let message = 'Si el usuario existe, se genero un enlace de recuperacion.';
+  let message = 'If the account exists, a recovery link has been generated.';
   if (user) {
     const token = 1000 + user.id;
     db.prepare('UPDATE users SET reset_token = ? WHERE id = ?').run(token, user.id);
-    message = 'Enlace de recuperacion: /reset?token=' + token;
-    console.log('[Auth] Token de reset generado para ' + user.username + ':', token);
+    message = 'Recovery link: /reset?token=' + token;
+    console.log('[Auth] Reset token generated for ' + user.username + ':', token);
   }
   res.render('forgot', { message });
 });
 
 app.get('/reset', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE reset_token = ?').get(req.query.token);
-  if (!user) return res.send('Token invalido o expirado.');
+  if (!user) return res.send('Invalid or expired token.');
   res.render('reset', { token: req.query.token });
 });
 
 app.post('/reset', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE reset_token = ?').get(req.body.token);
-  if (!user) return res.send('Token invalido o expirado.');
+  if (!user) return res.send('Invalid or expired token.');
   db.prepare('UPDATE users SET password = ?, reset_token = NULL WHERE id = ?')
     .run(hashPassword(req.body.password), user.id);
-  console.log('[Auth] Contraseña actualizada para usuario ID:', user.id);
-  res.send('Contraseña actualizada con exito. <a href="/login">Iniciar sesion</a>');
+  console.log('[Auth] Password updated for user ID:', user.id);
+  res.send('Password updated successfully. <a href="/login">Sign in</a>');
 });
 
 // ============================================================================
@@ -223,7 +223,7 @@ app.get('/profile', requireLogin, (req, res) => {
 // ----------------------------------------------------------------------------
 app.get('/profile/:id', requireLogin, (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
-  if (!user) return res.status(404).send('Usuario no encontrado');
+  if (!user) return res.status(404).send('User not found');
   res.render('profile', { profile: user });
 });
 
@@ -288,9 +288,9 @@ app.get('/orders', requireLogin, (req, res, next) => {
 app.get('/orders/:id', requireLogin, (req, res, next) => {
   try {
     const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
-    if (!order) return res.status(404).send('Pedido no encontrado');
+    if (!order) return res.status(404).send('Order not found');
     if (order.user_id !== req.session.user.id && req.session.user.role !== 'admin') {
-      return res.status(403).send('Acceso denegado: este pedido pertenece a otro usuario.');
+      return res.status(403).send('Access denied: this order belongs to another user.');
     }
     try {
       order.items = JSON.parse(order.items_json || '[]');
@@ -299,7 +299,7 @@ app.get('/orders/:id', requireLogin, (req, res, next) => {
     }
     res.render('order', { order });
   } catch (err) {
-    console.error('[Error en /orders/:id]', err);
+    console.error('[Error in /orders/:id]', err);
     next(err);
   }
 });
@@ -339,20 +339,20 @@ app.post('/admin/import-image', requireLogin, async (req, res) => {
 // ============================================================================
 
 app.use((err, req, res, next) => {
-  console.error('[Error interno]', err);
+  console.error('[Internal Error]', err);
   res.status(500).send(`
     <!DOCTYPE html>
-    <html lang="es">
+    <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>500 - Error interno</title>
+      <title>500 - Internal Server Error</title>
       <link rel="stylesheet" href="/public/css/style.css">
     </head>
     <body>
       <main class="container" style="max-width: 600px; margin: 4rem auto; text-align: center;">
-        <h1 style="color: #ef4444; font-size: 2.2rem; margin-bottom: 1rem;">500 - Error interno</h1>
-        <p style="color: #ccc; margin-bottom: 1.5rem;">Ocurrio un error procesando su solicitud: <code>${err.message || 'Error del servidor'}</code></p>
-        <p><a href="/" style="color: #06B6D4;">&larr; Volver al inicio</a> &nbsp;|&nbsp; <a href="/cart" style="color: #06B6D4;">Ir al carrito</a></p>
+        <h1 style="color: #ef4444; font-size: 2.2rem; margin-bottom: 1rem;">500 - Internal Server Error</h1>
+        <p style="color: #ccc; margin-bottom: 1.5rem;">An internal error occurred while processing your request: <code>${err.message || 'Server Error'}</code></p>
+        <p><a href="/" style="color: #06B6D4;">&larr; Return to Home</a> &nbsp;|&nbsp; <a href="/cart" style="color: #06B6D4;">Go to Cart</a></p>
       </main>
     </body>
     </html>
@@ -360,6 +360,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log('VulnShop escuchando en http://localhost:' + PORT);
-  console.log('Credenciales de prueba: admin/admin123, daniel/password, alejandro/qwerty');
+  console.log('VulnShop listening at http://localhost:' + PORT);
+  console.log('Test credentials: admin/admin123, daniel/password, alejandro/qwerty');
 });

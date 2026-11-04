@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,22 +12,22 @@
       <a class="brand" href="/"><span class="live-dot"></span> VulnShop</a>
     </div>
     <form class="search" action="/search" method="GET">
-      <input type="text" name="q" placeholder="Buscar productos..." value="">
-      <button type="submit">Buscar</button>
+      <input type="text" name="q" placeholder="Search products..." value="">
+      <button type="submit">Search</button>
     </form>
     <nav>
-      <a href="/cart">Carrito</a>
+      <a href="/cart">Cart</a>
       <% if (currentUser) { %>
-        <a href="/orders">Mis pedidos</a>
-        <a href="/profile">Perfil</a>
+        <a href="/orders">My Orders</a>
+        <a href="/profile">Profile</a>
         <% if (currentUser.role === 'admin') { %>
           <a href="/admin">Admin</a>
         <% } %>
         <span class="user">👤 <%= currentUser.username %></span>
-        <a href="/logout">Salir</a>
+        <a href="/logout">Logout</a>
       <% } else { %>
-        <a href="/login">Entrar</a>
-        <a href="/register">Registro</a>
+        <a href="/login">Sign In</a>
+        <a href="/register">Register</a>
       <% } %>
     </nav>
   </header>
